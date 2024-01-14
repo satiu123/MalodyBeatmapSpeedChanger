@@ -1,6 +1,6 @@
 # A Simple Malody BeatMap SpeedChanger
 
-simplely use ffmpeg&&json to edit
+simply use ffmpeg&&json to edit
 
 # Contens
 
