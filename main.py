@@ -1,5 +1,4 @@
-from ffmpeg import audio
-import ffmpeg,os,zipfile,json,subprocess
+import os,zipfile,json,subprocess,sox
 #unpacking
 def unzip_file(zip_filepath, dest_path) -> None:
     with zipfile.ZipFile(zip_filepath, 'r') as zip_ref:
@@ -19,19 +18,18 @@ def get_sample_rate(audio_file_path) -> int | None:
     for stream in ffprobe_output['streams']:
         if stream['codec_type'] == 'audio':
             return int(stream['sample_rate'])    
-def change_pitch(input_audio, output_audio,speed) -> None:
-    if os.path.exists(output_audio):
-        os.remove(output_audio)
-    sample_rate=get_sample_rate(input_audio)
-    audio = ffmpeg.input(input_audio).audio
-    #升调
-    if speed >1:
-        audio=  ffmpeg.filter(audio, 'atempo',speed/pow(2,(10*(speed-1))/12))
-        audio= ffmpeg.filter(audio, 'asetrate',f'{sample_rate}*{pow(2,(10*(speed-1))/12)}' )
-    if speed <1:
-        audio=  ffmpeg.filter(audio, 'atempo',1/speed*pow(2,(10*(1-speed))/12))
-    audio = ffmpeg.output(audio, output_audio)
-    ffmpeg.run(audio)
+def change_speed_and_pitch(input_file, output_file,speed):
+    print("processing:",input_file,"->",output_file,"speed:",speed,"...")
+    # 创建一个 transformer 对象
+    tfm = sox.Transformer()
+    # 设置音频的速度和音调
+    if speed<1:
+        tfm.tempo(factor=speed)
+    else:
+        tfm.speed(factor=speed)
+    # 应用 transformer 到音频文件
+    tfm.build(input_file, output_file)
+    print("done")
 class map:
     version:list=[] #record the name of the beatmap
     music:list=[]   #record music paths
@@ -39,6 +37,7 @@ class map:
     maplist:list=[] #record the beatmap path
     title:str=""    #record the beatmap title
     root:str=""     #record the beatmap root
+    
     def __init__(self) -> None:
         map_path=input("Please input FilePath(eg：d:/malody/export/Grief & Malice.mcz)：\n")
         unzip_file(map_path, "./temp")
@@ -86,7 +85,7 @@ if __name__ == '__main__':
     selected_map=int(input("input choice(eg:0)：\n"))
     speed_rate = [float(rate) for rate in input("input Speed (eg:1.1 1.3 1.4)：\n").split()]
     for rate in speed_rate:
-        change_pitch(maps.music[selected_map],maps.music[selected_map].replace(maps.get_split(selected_map,1),f"x{rate}{maps.get_split(selected_map,1)}"),rate)
+        change_speed_and_pitch(maps.music[selected_map],maps.music[selected_map].replace(maps.get_split(selected_map,1),f"x{rate}{maps.get_split(selected_map,1)}"),rate)
         maps.change_info(selected_map,rate)
     #packed into mcz
     zip_dir('temp', f'{maps.title}.mcz')
