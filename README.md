@@ -1,6 +1,10 @@
 # A Simple Malody BeatMap SpeedChanger
 
+<<<<<<< HEAD
 simplely use sox&&json to edit
+=======
+simply use ffmpeg&&json to edit
+>>>>>>> 212940fe1c87e17079a19c5bd7b377fe9448c30e
 
 # Contens
 
