@@ -8,16 +8,7 @@ def zip_dir(dirname, zipfilename) -> None:
     with zipfile.ZipFile(zipfilename, 'w') as zipf:
         for root, dirs, files in os.walk(dirname):
             for file in files:
-                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), dirname))
-def get_sample_rate(audio_file_path) -> int | None:
-    cmd = f'ffprobe -v quiet -print_format json -show_streams'
-    args = cmd.split()
-    args.append(audio_file_path)
-    ffprobe_output = subprocess.check_output(args).decode('utf-8')
-    ffprobe_output = json.loads(ffprobe_output)
-    for stream in ffprobe_output['streams']:
-        if stream['codec_type'] == 'audio':
-            return int(stream['sample_rate'])    
+                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), dirname))  
 def change_speed_and_pitch(input_file, output_file,speed):
     print("processing:",input_file,"->",output_file,"speed:",speed,"...")
     # 创建一个 transformer 对象
