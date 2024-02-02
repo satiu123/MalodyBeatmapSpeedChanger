@@ -1,10 +1,8 @@
 # A Simple Malody BeatMap SpeedChanger
 
-<<<<<<< HEAD
 simplely use sox&&json to edit
-=======
-simply use ffmpeg&&json to edit
->>>>>>> 212940fe1c87e17079a19c5bd7b377fe9448c30e
+
+
 
 # Contens
 
@@ -28,7 +26,7 @@ simply use ffmpeg&&json to edit
   ![Alt text](image-3.png)
 
 ## Tips
-
+- 使用前请先安装SoX，可以在[sourceforge](https://sourceforge.net/projects/sox/files/sox/)下载并添加到path
 - 加速会升高音调，减速不会改变音调
 - 因为只是复习累了所以随便写的，所以异常处理全都没写
 - bug 懒得测了，随便吧
