@@ -1,7 +1,7 @@
 # A Simple BeatMap SpeedChanger
 
-simplely use sox,ffmpeg,json to edit
-
+- simplely use sox,ffmpeg,json to edit
+- support malody/osu mania(just tested mania)
 
 
 # Contens
