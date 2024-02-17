@@ -1,7 +1,7 @@
 # A Simple BeatMap SpeedChanger
 
-simplely use sox,ffmpeg,json to edit
-
+- simplely use sox,ffmpeg,json to edit
+- support malody/osu mania(just tested mania)
 
 
 # Contens
@@ -14,7 +14,8 @@ simplely use sox,ffmpeg,json to edit
 
 ## ScreenShots
 - 在终端中运行,每次可自由多倍速，先选择谱面格式
-  ![alt text](image-4.png)
+  
+  ![Alt text](image-4.png)
   ![Alt text](image.png)
 - 简单调用 sox实现变速
   ![Alt text](image-1.png)
