@@ -1,4 +1,4 @@
-import os,zipfile,sox,subprocess
+import os,zipfile,subprocess
 class Map:
     version:list=[] #record the name of the beatmap
     music:list=[]   #record music paths
@@ -8,10 +8,19 @@ class Map:
     root:str=""     #record the beatmap root
     enum={"osu":0,"mc":1}
     def __init__(self) -> None:
+        sox_path = 'Tool/sox'
+        ffmpeg_path = 'Tool/ffmpeg/bin'
+        # 获取当前的path环境变量
+        path = os.environ.get('PATH', '')
+        # 将想要添加的路径追加到path变量中，用分号分隔
+        path = sox_path+";"+ffmpeg_path + ';' + path
+        # 将修改后的path变量设置为新的环境变量
+        os.environ['PATH'] = path
         map_path=input("Please input FilePath(eg：d:/malody/export/Grief & Malice.mcz)：\n")
         self.unzip_file(map_path, "./temp")
     def change_speed_and_pitch(self,input_file, output_file,speed):
         print("processing:",input_file,"->",output_file,"speed:",speed,"...")
+        import sox
         # 创建一个 transformer 对象
         tfm = sox.Transformer()
         # 设置音频的速度和音调
@@ -33,7 +42,7 @@ class Map:
             os.remove(temp_output)
         else:
             tfm.build(input_file, output_file)
-        print("done")
+        print("done!")
     def get_split(self,selected_map,pos):
         return os.path.splitext(self.music[selected_map])[pos]
     #unpacking
@@ -57,6 +66,8 @@ class Map:
         for rate in speed_rate:
             self.change_speed_and_pitch(self.music[selected_map],self.music[selected_map].replace(self.get_split(selected_map,1),f"x{rate}{self.get_split(selected_map,1)}"),rate)
             self.change_info(selected_map,rate)
-        #packed into mcz
-        self.zip_dir('temp', f'{self.title}'+f'{".osz"if maptype=="osu" else".mcz"}')
+        #packed
+        if not os.path.exists("out"):
+            os.makedirs("out")
+        self.zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else".mcz"}')
         os.system("rd /s/q temp")

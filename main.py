@@ -10,4 +10,5 @@ if __name__ == "__main__":
         mmalody.run("malody")
     else:
         print("敬请期待（coming sooooooon）")
-
+    print("All done! please check out folder")
+    input("Press Enter to exit...")
