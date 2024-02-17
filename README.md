@@ -28,7 +28,6 @@
   ![Alt text](image-5.jpg)
 
 ## Tips
-- 使用前请先安装SoX，可以在[sourceforge](https://sourceforge.net/projects/sox/files/sox/)下载并添加到path,[ffmpeg](https://ffmpeg.org/download.html)也是需要的
 - 加速会升高音调，减速不会改变音调
 - 因为只是复习累了所以随便写的，所以异常处理全都没写
 - bug 懒得测了，随便吧
@@ -37,3 +36,4 @@
 
 - 2024/1/31:使用sox替代了ffmpeg实现变速，之前变调有问题
 - 2024/2/3:因为sox默认不支持mp3，所以使用ffmpeg转码，增加了对.osu谱面的支持，下一步应该是etterna🤤
+- 2024/2/17:调用Tool目录下的ffmpeg和sox，无需额外安装。使用nuitka打包了exe方便使用，可以在[release](https://github.com/satiu123/MalodyBeatmapSpeedChanger/releases)中下载使用
