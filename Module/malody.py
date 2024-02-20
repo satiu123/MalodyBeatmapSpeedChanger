@@ -23,7 +23,7 @@ class Malody(Map):
         with open(file_path,encoding='utf-8') as f:
             mc = json.load(f)
             self.version.append(mc["meta"]["version"])
-            for note in mc["note"]:
+            for note in reversed(mc["note"]):
                 if note.get("sound") != None:
                     self.music.append(os.path.join(self.root,note["sound"]))
             for time in mc["time"]:
@@ -32,9 +32,8 @@ class Malody(Map):
     def change_info(self,selected_map,speed_rate) -> None:
         with open(self.maplist[selected_map],encoding='utf-8') as f:
             mc = json.load(f)
-            self.title=mc["meta"]["song"]["title"]
             mc["meta"]["version"]=mc["meta"]["version"]+"x"+str(speed_rate)
-            for note in mc["note"]:
+            for note in reversed(mc["note"]):
                 if note.get("sound") != None:
                     note["sound"]=note["sound"].replace(self.get_split(selected_map,1),f"x{speed_rate}{self.get_split(selected_map,1)}")
             for time in mc["time"]:

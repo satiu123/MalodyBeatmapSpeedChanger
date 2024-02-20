@@ -1,4 +1,4 @@
-import os,zipfile,subprocess
+import os,zipfile
 class Map:
     version:list=[] #record the name of the beatmap
     music:list=[]   #record music paths
@@ -6,17 +6,19 @@ class Map:
     maplist:list=[] #record the beatmap path
     title:str=""    #record the beatmap title
     root:str=""     #record the beatmap root
-    enum={"osu":0,"mc":1}
+    enum={"osu":0,"mc":1,"sm":2}
     def __init__(self) -> None:
         sox_path = 'Tool/sox'
-        ffmpeg_path = 'Tool/ffmpeg/bin'
         # 获取当前的path环境变量
         path = os.environ.get('PATH', '')
         # 将想要添加的路径追加到path变量中，用分号分隔
-        path = sox_path+";"+ffmpeg_path + ';' + path
+        path = sox_path+";" + path
         # 将修改后的path变量设置为新的环境变量
         os.environ['PATH'] = path
         map_path=input("Please input FilePath(eg：d:/malody/export/Grief & Malice.mcz)：\n")
+        map_path=map_path.strip('"')
+        if os.path.exists("temp"):
+            os.system("rd /s/q temp")
         self.unzip_file(map_path, "./temp")
     def change_speed_and_pitch(self,input_file, output_file,speed):
         print("processing:",input_file,"->",output_file,"speed:",speed,"...")
@@ -28,25 +30,13 @@ class Map:
             tfm.tempo(factor=speed)
         else:
             tfm.speed(factor=speed)
-
-        if input_file.endswith(".mp3"):
-            temp_input="./temp/temp_input.wav"
-            temp_output="./temp/temp_output.wav"
-            command = ['ffmpeg', '-i', input_file,'-threads', '4','-preset', 'ultrafast', temp_input]
-            subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
-            # 应用 transformer 到音频文件
-            tfm.build(temp_input, temp_output)
-            command = ['ffmpeg', '-i', temp_output,'-threads', '4','-preset', 'ultrafast', output_file]
-            subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True) 
-            os.remove(temp_input)
-            os.remove(temp_output)
-        else:
-            tfm.build(input_file, output_file)
+        tfm.build(input_file, output_file)
         print("done!")
     def get_split(self,selected_map,pos):
         return os.path.splitext(self.music[selected_map])[pos]
     #unpacking
     def unzip_file(self,zip_filepath, dest_path) -> None:
+        self.title=os.path.basename(zip_filepath).split(".")[0]
         with zipfile.ZipFile(zip_filepath, 'r') as zip_ref:
             zip_ref.extractall(dest_path)
     #pack
@@ -57,7 +47,7 @@ class Map:
                     zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), dirname)) 
     def change_info(self,select_map,speed_rate) -> None:
         pass
-    #maptype:osu ||malody
+    #maptype:osu ||malody ||etterna
     def run(self,maptype):
         for mapp in self.version:
             print(self.version.index(mapp),":",mapp)
@@ -69,5 +59,7 @@ class Map:
         #packed
         if not os.path.exists("out"):
             os.makedirs("out")
-        self.zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else".mcz"}')
+        self.zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else ".mcz" if maptype=="malody" else ".zip"}')
         os.system("rd /s/q temp")
+        input("All done!Press Enter to check...")
+        os.startfile("out")

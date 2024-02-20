@@ -21,7 +21,6 @@ class Osu(Map):
                     file_path=os.path.join(self.root,file)
                     self.maplist.append(file_path)
                     self.parse_osu_file(file_path)
-                    self.title=self.all_map[0]["Metadata"][0].split(":")[1]
                     self.get_info()
     def parse_osu_file(self,file_path):
         current_section = None
