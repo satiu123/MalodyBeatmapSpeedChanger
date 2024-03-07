@@ -1,4 +1,8 @@
-import os,zipfile
+import os,zipfile,time
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
+from pathlib import Path
+from threading import Lock
 class Map:
     version:list=[] #record the name of the beatmap
     music:list=[]   #record music paths
@@ -8,6 +12,7 @@ class Map:
     root:str=""     #record the beatmap root
     enum={"osu":0,"mc":1,"sm":2}
     def __init__(self) -> None:
+        self.lock=Lock()
         sox_path = 'Tool/sox'
         # 获取当前的path环境变量
         path = os.environ.get('PATH', '')
@@ -21,7 +26,6 @@ class Map:
             os.system("rd /s/q temp")
         self.unzip_file(map_path, "./temp")
     def change_speed_and_pitch(self,input_file, output_file,speed):
-        print("processing:",input_file,"->",output_file,"speed:",speed,"...")
         import sox
         # 创建一个 transformer 对象
         tfm = sox.Transformer()
@@ -31,7 +35,7 @@ class Map:
         else:
             tfm.speed(factor=speed)
         tfm.build(input_file, output_file)
-        print("done!")
+        print("processing:",input_file,"->",output_file,"speed:",speed,"... done!")
     def get_split(self,selected_map,pos):
         return os.path.splitext(self.music[selected_map])[pos]
     #unpacking
@@ -47,16 +51,27 @@ class Map:
                     zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), dirname)) 
     def change_info(self,select_map,speed_rate) -> None:
         pass
+
+    def change_filename(self,path, rate):
+        path = Path(path)
+        new_name = path.stem + f"x{rate}" + path.suffix
+        new_path = path.with_name(new_name)
+        return str(new_path)
+    def process(self,selected_map,rate):
+        self.change_speed_and_pitch(self.music[selected_map],self.change_filename(self.music[selected_map],rate),rate)
+        self.change_info(selected_map,rate)
     #maptype:osu ||malody ||etterna
     def run(self,maptype):
         for mapp in self.version:
             print(self.version.index(mapp),":",mapp)
         selected_map=int(input("input choice(eg:0)：\n"))
         speed_rate = [float(rate) for rate in input("input Speed (eg:1.1 1.3 1.4)：\n").split()]
-        for rate in speed_rate:
-            self.change_speed_and_pitch(self.music[selected_map],self.music[selected_map].replace(self.get_split(selected_map,1),f"x{rate}{self.get_split(selected_map,1)}"),rate)
-            self.change_info(selected_map,rate)
-        #packed
+        begin=time.time()
+        print("start processing!")
+        with ThreadPoolExecutor() as executor:
+            executor.map(partial(self.process,selected_map),speed_rate)
+        print(f"Total cost:{time.time()-begin:.2}s")
+        #packed 
         if not os.path.exists("out"):
             os.makedirs("out")
         self.zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else ".mcz" if maptype=="malody" else ".zip"}')

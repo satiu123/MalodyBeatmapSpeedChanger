@@ -32,7 +32,7 @@ class Malody(Map):
     def change_info(self,selected_map,speed_rate) -> None:
         with open(self.maplist[selected_map],encoding='utf-8') as f:
             mc = json.load(f)
-            mc["meta"]["version"]=mc["meta"]["version"]+"x"+str(speed_rate)
+            mc["meta"]["version"]=mc["meta"]["version"]+" "+str(speed_rate)+"x"
             for note in reversed(mc["note"]):
                 if note.get("sound") != None:
                     note["sound"]=note["sound"].replace(self.get_split(selected_map,1),f"x{speed_rate}{self.get_split(selected_map,1)}")

@@ -39,7 +39,7 @@ class Etterna(Map):
             f.seek(0)
             for line in f:
                 line = line.strip()
-                if line.startswith("//"):
+                if not line or line.startswith("//"):
                     break
                 key=line[1:].split(":")
                 value=key[1].replace(";","")
@@ -90,7 +90,7 @@ class Etterna(Map):
             else:
                 break
         note=re.sub(re.escape(self.version[select_map]),
-                                        f'{self.version[select_map]}x{speed_rate}',self.note[i][select_map])
+                                        f'{self.version[select_map]} {speed_rate}x',self.note[i][select_map])
         new_file_path = os.path.join(self.root, 
                                      os.path.splitext(os.path.basename(self.maplist[select_map]))[0]+f'x{speed_rate}.sm')
         with open(new_file_path, 'w', encoding='utf-8') as f:

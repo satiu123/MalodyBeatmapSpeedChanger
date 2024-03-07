@@ -41,9 +41,14 @@ class Osu(Map):
         self.bpmlist.append(float(self.data["TimingPoints"][0].split(",")[1]))
     def change_info(self, select_map, speed_rate) -> None:
         self.data=copy.deepcopy(self.all_map[select_map])
-        self.data["Metadata"][5]+=f"x{speed_rate}"
+        self.data["Metadata"][5]+=f" {speed_rate}x"
         self.data["General"][0]=f"AudioFilename:{os.path.basename(self.music[select_map]).replace(self.get_split(select_map,1),f'x{speed_rate}{self.get_split(select_map,1)}')}"
-        self.data["TimingPoints"][0]=f"{0},{self.bpmlist[select_map]/speed_rate},4,1,0,100,1,0"
+        for i in range(len(self.data["TimingPoints"])):
+            timing_point = self.data["TimingPoints"][i].split(",")
+            if timing_point[0]=='':
+                break
+            timing_point[1] = str(float(timing_point[1]) / speed_rate)
+            self.data["TimingPoints"][i] = ",".join(timing_point)
         for i in range(len(self.data["HitObjects"])):
             beat_time = self.data["HitObjects"][i].split(",")
             beat_time[2] = str(int(int(beat_time[2])/speed_rate))
@@ -53,7 +58,7 @@ class Osu(Map):
             self.data["HitObjects"][i] = ",".join(beat_time)
 
         # create a new file
-        new_file_path = os.path.join(self.root, os.path.splitext(os.path.basename(self.maplist[select_map]))[0]+f'x{speed_rate}.osu')
+        new_file_path = os.path.join(self.root, os.path.splitext(os.path.basename(self.maplist[select_map]))[0]+f' {speed_rate}x.osu')
         # write the modified json to a new file
         with open(new_file_path, 'w', encoding='utf-8') as f:
             for section in self.data:
