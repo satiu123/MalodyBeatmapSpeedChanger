@@ -39,3 +39,4 @@
 - 2024/2/17:调用Tool目录下的ffmpeg和sox，无需额外安装。使用nuitka打包了exe方便使用，可以在[release](https://github.com/satiu123/MalodyBeatmapSpeedChanger/releases)中下载使用
 - 2024/2/20:为sox增加了libmad和libmp3lame插件，现在已经不需要ffmpeg了，增加了etterna谱面（.sm）的支持，现在DisplayBpm还没处理，有些有此tag的谱面会在游戏里会有点显示的问题，但是不影响游玩(后面会处理，图片懒得换了,后面会整个gui，方便批量处理)。
 - 2024/3/7:修复了读取.sm谱面的某些错误,使用线程池来让多个音频处理任务同时进行以加速，修复了对osu多个变速节点处理（应该），前面说的DisplayBpm还没搞，打算qt整个简单界面方便批量处理（上课摆烂中）
+- 2024/3/8:写了一点点注释，现在不需要手动输入谱面类型，会自动匹配(通过压缩包中的谱面文件后缀，所以不要混着)
