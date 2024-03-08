@@ -1,8 +1,8 @@
 from Module.map import Map
 import os,copy
 class Osu(Map):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self,map_path) -> None:
+        super().__init__(map_path)
         '''
         version:list=[] #record the name of the beatmap
         music:list=[]   #record music paths

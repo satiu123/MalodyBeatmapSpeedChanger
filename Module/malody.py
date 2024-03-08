@@ -1,8 +1,8 @@
 from Module.map import Map
 import os,json
 class Malody(Map):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self,map_path) -> None:
+        super().__init__(map_path)
         #traverse the temp directory
         '''
         version:list=[] #record the name of the beatmap

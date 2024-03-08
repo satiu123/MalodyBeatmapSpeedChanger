@@ -11,8 +11,8 @@ def replace_music(match,music:str,speed:float):
     temp=music.strip().split(".")
     return f"#MUSIC:{temp[0]}x{speed}.{temp[1]}"
 class Etterna(Map):
-    def __init__(self):
-        super().__init__()
+    def __init__(self,map_path):
+        super().__init__(map_path)
         '''
         version:list=[] #record the name of the beatmap
         music:list=[]   #record music paths
