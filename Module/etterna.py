@@ -37,12 +37,15 @@ class Etterna(Map):
         with open(file_path, 'r',encoding='utf-8') as f:
             self.count=self.get_info(f)
             f.seek(0)
+            #从每一行开始读取信息
             for line in f:
                 line = line.strip()
+                #当行为空或者以"//"开头说明歌曲和谱面相关信息结束，后面是note信息
                 if not line or line.startswith("//"):
                     break
                 key=line[1:].split(":")
                 value=key[1].replace(";","")
+                #因为只需要修改音乐名和bpm，故只获取这两项
                 if key[0]=="MUSIC":
                     for i in range(self.count):
                         self.music.append(os.path.join(self.root,value))
@@ -53,6 +56,7 @@ class Etterna(Map):
         match=re.finditer(r'//---------------',content)
         pos:list=[]
         string:list=[]
+        #因为一个.sm谱面文件中可能有同一首歌的不同谱面，所以要保存所有匹配的位置
         for m in match:
             pos.append(m.start())
         if pos.__len__()==1:
@@ -61,6 +65,7 @@ class Etterna(Map):
             for i in range(pos.__len__()-1):
                 string.append(content[pos[i]:pos[i+1]])
             string.append(content[pos[-1]:])
+        #获取难度名(因为难度名在"//---------------"开始的第五行)
         for s in string:
             file_like_string = io.StringIO(s)
             for _ in range(4):  # 跳过前四行
@@ -91,8 +96,10 @@ class Etterna(Map):
                 break
         note=re.sub(re.escape(self.version[select_map]),
                                         f'{self.version[select_map]} {speed_rate}x',self.note[i][select_map])
+        #新建谱面(.sm)文件
         new_file_path = os.path.join(self.root, 
                                      os.path.splitext(os.path.basename(self.maplist[select_map]))[0]+f'x{speed_rate}.sm')
+        #写入谱面信息
         with open(new_file_path, 'w', encoding='utf-8') as f:
             f.write(info)
             f.write(note)

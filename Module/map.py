@@ -60,6 +60,13 @@ class Map:
     def process(self,selected_map,rate):
         self.change_speed_and_pitch(self.music[selected_map],self.change_filename(self.music[selected_map],rate),rate)
         self.change_info(selected_map,rate)
+    def pack(self,maptype):
+        if not os.path.exists("out"):
+            os.makedirs("out")
+        self.zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else ".mcz" if maptype=="malody" else ".zip"}')
+        os.system("rd /s/q temp")
+        input("All done!Press Enter to check...")
+        os.startfile("out")
     #maptype:osu ||malody ||etterna
     def run(self,maptype):
         for mapp in self.version:
@@ -72,9 +79,4 @@ class Map:
             executor.map(partial(self.process,selected_map),speed_rate)
         print(f"Total cost:{time.time()-begin:.2}s")
         #packed 
-        if not os.path.exists("out"):
-            os.makedirs("out")
-        self.zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else ".mcz" if maptype=="malody" else ".zip"}')
-        os.system("rd /s/q temp")
-        input("All done!Press Enter to check...")
-        os.startfile("out")
+        self.pack(maptype)
