@@ -1,4 +1,4 @@
-from Module.map import Map
+from Module.Process.map import Map
 import os,json
 class Malody(Map):
     def __init__(self,map_path) -> None:
@@ -44,3 +44,4 @@ class Malody(Map):
         # write the modified json to a new file
         with open(new_file_path, 'w', encoding='utf-8') as f:
             json.dump(mc, f, ensure_ascii=False)
+    

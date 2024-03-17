@@ -2,16 +2,21 @@ import os,zipfile,time
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
+from  Module.Gui.MySignal import MySignal
+
+info_signal = MySignal()
 def unzip_file(zip_filepath, dest_path) -> None:
     if os.path.exists("temp"):
         os.system("rd /s/q temp")
-    with zipfile.ZipFile(zip_filepath, 'r') as zip_ref:
-        zip_ref.extractall(dest_path)
+    with zipfile.ZipFile(zip_filepath, 'r') as zip:
+        zip.extractall(dest_path)
+
 def zip_dir(dirname, zipfilename) -> None:
-    with zipfile.ZipFile(zipfilename, 'w') as zipf:
+    with zipfile.ZipFile(zipfilename, 'w') as zip:
         for root, dirs, files in os.walk(dirname):
             for file in files:
-                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), dirname))
+                zip.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), dirname))
+
 def judge_maptype() -> str:
     maptype:str="None"
     for root, dirs, files in os.walk("./temp"):
@@ -25,17 +30,20 @@ def judge_maptype() -> str:
                 elif file.endswith(".sm"):
                     maptype="etterna"
                     break
-    print("the MAPTYPE is:",maptype)
+    info_signal.signal1.emit(f"the MAPTYPE is:{maptype}")
+    #print("the MAPTYPE is:",maptype)
     return maptype
+
 class Map:
-    version:list=[] #record the name of the beatmap
-    music:list=[]   #record music paths
-    bpmlist:list=[] #record the bpm
-    maplist:list=[] #record the beatmap path
-    title:str=""    #record the beatmap title
-    root:str=""     #record the beatmap root
+    
     enum={"osu":0,"mc":1,"sm":2}
     def __init__(self,map_path) -> None:
+        self.version:list=[] #record the name of the beatmap
+        self.music:list=[]   #record music paths
+        self.bpmlist:list=[] #record the bpm
+        self.maplist:list=[] #record the beatmap path
+        self.title:str=""    #record the beatmap title
+        self.root:str=""     #record the beatmap root
         sox_path = 'Tool/sox'
         # 获取当前的path环境变量
         path = os.environ.get('PATH', '')
@@ -44,6 +52,7 @@ class Map:
         # 将修改后的path变量设置为新的环境变量
         os.environ['PATH'] = path
         self.title=os.path.basename(map_path).split(".")[0]
+
     def change_speed_and_pitch(self,input_file, output_file,speed):
         import sox
         # 创建一个 transformer 对象
@@ -54,7 +63,8 @@ class Map:
         else:
             tfm.speed(factor=speed)
         tfm.build(input_file, output_file)
-        print("processing:",input_file,"->",output_file,"speed:",speed,"... done!")
+        info_signal.signal1.emit(f"processing:{input_file}->{output_file} speed:{speed}... done!")
+        # print("processing:",input_file,"->",output_file,"speed:",speed,"... done!")
     def get_split(self,selected_map,pos):
         return os.path.splitext(self.music[selected_map])[pos]
     def change_info(self,select_map,speed_rate) -> None:
@@ -73,25 +83,35 @@ class Map:
             os.makedirs("out")
         zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else ".mcz" if maptype=="malody" else ".zip"}')
         os.system("rd /s/q temp")
-        input("All done!Press Enter to check...")
-        os.startfile("out")
+        # input("All done!Press Enter to check...")
+        #os.startfile("out")
+    def get_version(self):
+        return self.version
+    def get_title(self):
+        return self.title
     #maptype:osu ||malody ||etterna
-    def run(self,maptype):
-        if not self.version:
-            print("0:No Name")
-        for mapp in self.version:
-            #当没有难度名时，输出"No Name"
-            if not mapp:
-                print(self.version.index(mapp),":","No Name")
-            else:
-                print(self.version.index(mapp),":",mapp)
-        selected_map=int(input("input choice(eg:0)：\n"))
-        speed_rate = [float(rate) for rate in input("input Speed (eg:1.1 1.3 1.4)：\n").split()]
+    def run(self,maptype,speed_rate,version):
+        # if not self.version:
+        #     print("0:No Name")
+        # for mapp in self.version:
+        #     #当没有难度名时，输出"No Name"
+        #     if not mapp:
+        #         print(self.version.index(mapp),":","No Name")
+        #     else:
+        #         print(self.version.index(mapp),":",mapp)
+        #selected_map=int(input("input choice(eg:0)：\n"))
+        selected_map=self.version.index(version)
+        #speed_rate = [float(rate) for rate in input("input Speed (eg:1.1 1.3 1.4)：\n").split()]
         begin=time.time()
-        print("start processing!\n"
+        info_signal.signal1.emit(f"start processing!{self.title}\n"
               "if the audio file is an MP3 file, the speed may be slower please wait patiently!")
+        # print("start processing!\n"
+        #       "if the audio file is an MP3 file, the speed may be slower please wait patiently!")
         with ThreadPoolExecutor() as executor:
             executor.map(partial(self.process,selected_map),speed_rate)
-        print(f"Total cost:{time.time()-begin:.2f}s")
+        # for rate in speed_rate:
+        #     self.process(selected_map,rate)
+        info_signal.signal1.emit(f"Total cost:{time.time()-begin:.2f}s")
         #packed 
         self.pack(maptype)
+

@@ -1,4 +1,4 @@
-from Module.map import Map
+from Module.Process.map import Map
 import os,copy
 class Osu(Map):
     def __init__(self,map_path) -> None:
