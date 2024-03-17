@@ -1,4 +1,4 @@
-from Module.Process.map import Map
+from Module.map import Map
 from functools import partial
 import os,re,io,copy
 def multiply_bpm(match,speed):

@@ -9,14 +9,10 @@ def run(maptype,map_path):
         game=etterna.Etterna(map_path)
     game.run(maptype)
 if __name__ == "__main__":
-    try:
-        map_path=input("Please input FilePath(eg：d:/malody/export/Grief & Malice.mcz)：\n")
-        map_path=map_path.strip('"')
-        unzip_file(map_path,"./temp")
-        maptype=judge_maptype()
-        run(maptype,map_path)
-    except Exception as e:
-        print(e)
-        input("Press Enter to exit...")
+    map_path=input("Please input FilePath(eg：d:/malody/export/Grief & Malice.mcz)：\n")
+    map_path=map_path.strip('"')
+    unzip_file(map_path,"./temp")
+    maptype=judge_maptype()
+    run(maptype,map_path)
 
 
