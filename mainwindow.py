@@ -11,6 +11,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.rate_dict={}
+
         self.setWindowTitle("SoundChanger by satiu")
         self.setWindowIcon(QIcon("wife.jpg"))
         self.createInputAndOutputPart()
@@ -102,13 +104,15 @@ class MainWindow(QMainWindow):
 
     def addQueue(self):
         if self.rate_text.toPlainText()!='':
-            addQueue(self.listWidget.currentItem().text(),self.rate_text.toPlainText())
+            self.rate_dict[self.listWidget.currentItem().text()]=list(map(float,self.rate_text.toPlainText().split(" ")))
             self.show_tooltip("Add to queue successfully!")
         else:
             self.show_tooltip("Please enter the rate!")
         
     def start(self):
         self.outputInfo.clear()
+        addQueue(self.rate_dict)
+        self.rate_dict.clear()
         thread1=threading.Thread(target=startQueue)
         thread1.start()
     def openFolder(self):

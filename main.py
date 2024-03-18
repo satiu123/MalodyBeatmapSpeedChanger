@@ -14,7 +14,6 @@ stop_thread = False
 
 def run(map_path,rate):
     global version,user_has_chosen,game
-    rate=list(map(float,rate.split()))
     maptype=getVersion(map_path)
     #等待用户选择
     while not user_has_chosen:
@@ -25,7 +24,7 @@ def run(map_path,rate):
     user_has_chosen = False
     game.run(maptype,rate,version) #type:ignore
 def getVersion(map_path):
-    global game,stop_thread
+    global game,stop_thread,version,user_has_chosen
     map_path=map_path.strip('"')
     unzip_file(map_path,"./temp")
     maptype=judge_maptype()
@@ -35,12 +34,19 @@ def getVersion(map_path):
         game=malody.Malody(map_path)
     if maptype=="etterna":
         game=etterna.Etterna(map_path)
-    getinfo_signal.signal2.emit(game.get_version(),game.get_title()) #type:ignore
+    map_version=game.get_version() #type:ignore
+    if map_version.__len__()==1:
+        version=map_version[0]
+        user_has_chosen =True
+        stop_thread=False
+    else:
+        getinfo_signal.signal2.emit(game.get_version(),game.get_title()) #type:ignore
     return maptype #type:ignore
-def addQueue(map_path, rate):
-    global run_thread
+def addQueue(rate_dict):
     # 将参数添加到队列中
-    run_queue.put((map_path, rate))
+    for map_path in rate_dict.keys():
+        run_queue.put((map_path, rate_dict[map_path]))
+
 def processQueue():
     while not run_queue.empty():
         # 从队列中获取参数
