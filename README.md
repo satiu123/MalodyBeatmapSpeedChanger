@@ -13,12 +13,12 @@
   - [Update](#update)
 
 ## ScreenShots
-- 在终端中运行,每次可自由多倍速，先选择谱面格式
+- 在终端中运行,每次可自由多倍速（不需要选择格式）
   
   ![Alt text](image.png)
 - 简单调用 sox实现变速
   ![Alt text](image-1.png)
-- 会暂时创建 temp 目录并解包到此目录，最后生成 mcz 文件后删除
+- 会暂时创建 temp 目录并解包到此目录，最后生成 mcz/osz/zip 文件后删除
 
   ![Alt text](image-2.png)
 
@@ -39,3 +39,4 @@
 - 2024/2/20:为sox增加了libmad和libmp3lame插件，现在已经不需要ffmpeg了，增加了etterna谱面（.sm）的支持，现在DisplayBpm还没处理，有些有此tag的谱面会在游戏里会有点显示的问题，但是不影响游玩(后面会处理，图片懒得换了,后面会整个gui，方便批量处理)。
 - 2024/3/7:修复了读取.sm谱面的某些错误,使用线程池来让多个音频处理任务同时进行以加速，修复了对osu多个变速节点处理（应该），前面说的DisplayBpm还没搞，打算qt整个简单界面方便批量处理（上课摆烂中）
 - 2024/3/8:写了一点点注释，现在不需要手动输入谱面类型，会自动匹配(通过压缩包中的谱面文件后缀，所以不要混着)
+- 2024/3/18:用PySide6做了个简单的gui界面便于多谱面处理，切换到[gui](https://github.com/satiu123/MalodyBeatmapSpeedChanger/tree/gui)分支就行，将etterna.py里的正则处理改为字典，感觉更舒服点
