@@ -8,35 +8,30 @@
 
 - [A Simple BeatMap SpeedChanger](#a-simple-beatmap-speedchanger)
 - [Contens](#contens)
-  - [ScreenShots](#screenshots)
+  - [ScreenShots\&Usage](#screenshotsusage)
   - [Tips](#tips)
   - [Update](#update)
 
-## ScreenShots
-- 在终端中运行,每次可自由多倍速，先选择谱面格式
-  
-  ![Alt text](image-4.png)
-  ![Alt text](image.png)
-- 简单调用 sox实现变速
-  ![Alt text](image-1.png)
-- 会暂时创建 temp 目录并解包到此目录，最后生成 mcz 文件后删除
-
-  ![Alt text](image-2.png)
-
+## ScreenShots&Usage
+- 这是主界面
+  ![alt text](image-1.png)
+- 你可以将谱面文件拖入或者点击左上角的板块打开一个文件选择器导入
+  ![alt text](image.png)
+  ![alt text](image-2.png)
+- 通过鼠标选择需要操作的item，选择后可以使用上下方向键选择，可以通过Backspace键删除一个item
+  ![alt text](image-3.png)
+- 在左下角文本框输入倍速(float)，以空格(" ")分隔，点击"AddtoQueue"按钮添加到队列
+  ![alt text](image-5.png)
+- 将所有任务都添加到队列后点击"Start"按钮开始处理（处理同时也可以为队列添加内容），每张图如果有多个难度名（单个会自动选择）会弹出一个窗口来选择（空难度名也是可以的，但是如果有多个空难度名就不行了，没有区分）
+  ![alt text](image-6.png)
+- 进行处理
+  ![alt text](image-7.png)
+- 点击"Open Output Folder"按钮打开项目下的"out"目录
+  ![alt text](image-8.png)
 - 最后导入到 malody/osu 就行啦ヾ(≧▽≦\*)o
-  ![Alt text](image-3.png)
-  ![Alt text](image-5.jpg)
+
 
 ## Tips
-- 加速会升高音调，减速不会改变音调
-- 因为只是复习累了所以随便写的，所以异常处理全都没写
-- bug 懒得测了，随便吧
-- 以后有可能会支持更多格式的谱面(?咕咕咕)
+- 请不要关闭难度选择窗口（这一块的逻辑还没弄好，可能会导致整个程序出现错误
 ## Update
-
-- 2024/1/31:使用sox替代了ffmpeg实现变速，之前变调有问题
-- 2024/2/3:因为sox默认不支持mp3，所以使用ffmpeg转码，增加了对.osu谱面的支持，下一步应该是etterna🤤
-- 2024/2/17:调用Tool目录下的ffmpeg和sox，无需额外安装。使用nuitka打包了exe方便使用，可以在[release](https://github.com/satiu123/MalodyBeatmapSpeedChanger/releases)中下载使用
-- 2024/2/20:为sox增加了libmad和libmp3lame插件，现在已经不需要ffmpeg了，增加了etterna谱面（.sm）的支持，现在DisplayBpm还没处理，有些有此tag的谱面会在游戏里会有点显示的问题，但是不影响游玩(后面会处理，图片懒得换了,后面会整个gui，方便批量处理)。
-- 2024/3/7:修复了读取.sm谱面的某些错误,使用线程池来让多个音频处理任务同时进行以加速，修复了对osu多个变速节点处理（应该），前面说的DisplayBpm还没搞，打算qt整个简单界面方便批量处理（上课摆烂中）
-- 2024/3/8:写了一点点注释，现在不需要手动输入谱面类型，会自动匹配(通过压缩包中的谱面文件后缀，所以不要混着)
+- initial build
