@@ -119,10 +119,7 @@ class Etterna(Map):
             self.bpm_dict[temp[0]]=temp[1]
 
     def change_bpm(self,speed) -> str:
-        bpm_dict=copy.deepcopy(self.bpm_dict)
-        for key in bpm_dict.keys():
-            bpm_dict[key]=f"{float(bpm_dict[key])*speed}"# 乘以speed参数
-            bpm=",".join([f"{k}={v}" for k,v in bpm_dict.items()])+";"
+        bpm=",".join([f"{key}={float(value)*speed}" for key,value in self.bpm_dict.items()])+";"
         return bpm
     
     def change_offset(self,offset, speed) -> str:
@@ -138,8 +135,8 @@ class Etterna(Map):
         if dbpms == "*":
             pass
         else:
-            dbpms = list(map(float, dbpms.split(":")))
+            dbpms =  dbpms.split(":")
             for i in range(len(dbpms)):
                 dbpms[i] = dbpms[i] * speed
-            result = "#DISPLAYBPM:"+":".join(list(map(str, dbpms)))+";"
+            result = "#DISPLAYBPM:"+":".join(f"{float(bpm)*speed}"for bpm in dbpms)+";"
         return result
