@@ -1,24 +1,6 @@
 from Module.map import Map
-from functools import partial
 import os,re,io,copy
-def multiply_bpm(match,speed):
-    number = float(match.group(1))
-    return f"={number * speed}"  # 乘以speed参数
-def change_offset(offset, speed):
-    offset = float(offset)
-    return f"{offset / speed}"  # 乘以speed参数
-def change_music_name(music:str,speed:float):
-    temp=music.strip().split(".")
-    return f"{temp[0]}x{speed}.{temp[1]}"
-def change_displaybpm(dbpms, speed: float):
-    if dbpms == "*":
-        pass
-    else:
-        dbpms = list(map(float, dbpms.split(":")))
-        for i in range(len(dbpms)):
-            dbpms[i] = dbpms[i] * speed
-        result = "#DISPLAYBPM:"+":".join(list(map(str, dbpms)))+";"
-    return result
+
 class Etterna(Map):
     def __init__(self,map_path):
         super().__init__(map_path)
@@ -30,6 +12,7 @@ class Etterna(Map):
         title:str=""    #record the beatmap title
         root:str=""
         '''
+        self.bpm_dict:dict={} #record the bpm of each beatmap
         self.info:list=[]   #record the beatmap information
         self.note:list=[]    #record the note info
         self.count:int=0
@@ -43,7 +26,7 @@ class Etterna(Map):
                         self.maplist.append(file_path)
     def parse_etterna_file(self,file_path):
         data={}
-        with open(file_path, 'r',encoding='utf-8') as f:
+        with open(file_path, 'r',encoding='utf-8-sig') as f:
             self.count=self.get_info(f)
             f.seek(0)
             #从每一行开始读取信息
@@ -54,59 +37,66 @@ class Etterna(Map):
                     continue
                 if not line or line.startswith("//-"):
                     break
-                key=line[1:].split(":")
+                #获取键名
+                key=line.split(":")
+                #获取键值
                 value=key[1].replace(";","")
-                data['#'+key[0]]=value
+                #将键值添加到字典中
+                data[key[0]]=value
+
                 #因为只需要修改音乐名和bpm，故只获取这两项
-                if key[0]=="MUSIC":
+                if key[0]=="#MUSIC":
                     for i in range(self.count):
                         self.music.append(os.path.join(self.root,value))
-                if key[0]=="BPMS":
-                    self.bpmlist.append(value.strip(","))
-        self.info.append(data)
+                if key[0]=="#BPMS":
+                    self.get_bpms(value)
+        for i in range(self.count):
+            self.info.append(copy.deepcopy(data))
     def get_info(self,file):
         content=file.read()
+        #获取每一张谱面的开头位置
         match=re.finditer(r'//---------------',content)
         pos:list=[]
         string:list=[]
         #因为一个.sm谱面文件中可能有同一首歌的不同谱面，所以要保存所有匹配的位置
         for m in match:
             pos.append(m.start())
-        if pos.__len__()==1:
+        #将每个谱面的信息保存到string中
+        if pos.__len__()==1:#.sm文件中只有一个谱面
             string.append(content[pos[0]:])
-        else:
+        else:#.sm文件中有多个谱面
             for i in range(pos.__len__()-1):
-                string.append(content[pos[i]:pos[i+1]])
-            string.append(content[pos[-1]:])
+                string.append(content[pos[i]:pos[i+1]])#中间的谱面
+            string.append(content[pos[-1]:])#最后一个谱面
         #获取难度名(因为难度名在"//---------------"开始的第五行)
         for s in string:
             file_like_string = io.StringIO(s)
             for _ in range(4):  # 跳过前四行
                 next(file_like_string)
             fifth_line = file_like_string.readline()  # 读取第五行
-            self.version.append(fifth_line[:-2].strip())   
-        # for i in range(pos.__len__()): 
-        #     self.info.append(content[:pos[0]])
+            self.version.append(fifth_line[:-2].strip())   #[:-2]是为了去掉行末的";"
+        #将每个谱面的信息保存到note中
         self.note.append(string) 
-        return pos.__len__()  
+        return pos.__len__() 
     def change_info(self, select_map, speed_rate) -> None:
+
         #修改音频名
         info=copy.deepcopy(self.info[select_map])
-        info['#MUSIC']=change_music_name(info['#MUSIC'],speed_rate)
+        info['#MUSIC']=self.change_music_name(info['#MUSIC'],speed_rate)
         
         #修改offset
-        info['#OFFSET']=change_offset(info['#OFFSET'],speed_rate)
+        info['#OFFSET']=self.change_offset(info['#OFFSET'],speed_rate)
 
         #修改BPM
-        info['#BPMS']=re.sub(r'=([\d\.]+)', partial(multiply_bpm, speed=speed_rate), info['#BPMS'])
+        info['#BPMS']=self.change_bpm(speed_rate)
         
         #修改displaybpm
         if "#DISPLAYBPM" in info.keys():
-            info['#DISPLAYBPM']=change_displaybpm(info['#DISPLAYBPM'],speed_rate)
-        #修改难度名
+            info['#DISPLAYBPM']=self.change_displaybpm(info['#DISPLAYBPM'],speed_rate)
+                #修改难度名
         i: int=0
         for i in range(100):
-            if select_map>self.note[i].__len__():
+            if select_map>=self.note[i].__len__():
                 select_map=select_map-self.note[i].__len__()
             else:
                 break
@@ -122,3 +112,34 @@ class Etterna(Map):
                 f.write(key+":"+info[key]+";\n")
             for n in note:
                 f.write(n+'\n')
+    def get_bpms(self,value):
+        value=value.split(",")
+        for v in value:
+            temp=v.split("=")
+            self.bpm_dict[temp[0]]=temp[1]
+
+    def change_bpm(self,speed) -> str:
+        bpm_dict=copy.deepcopy(self.bpm_dict)
+        for key in bpm_dict.keys():
+            bpm_dict[key]=f"{float(bpm_dict[key])*speed}"# 乘以speed参数
+            bpm=",".join([f"{k}={v}" for k,v in bpm_dict.items()])+";"
+        return bpm
+    
+    def change_offset(self,offset, speed) -> str:
+        offset = float(offset)
+        return f"{offset / speed}"  # 乘以speed参数
+    
+    def change_music_name(self,music:str,speed:float) -> str:
+        temp=music.strip().split(".")
+        return f"{temp[0]}x{speed}.{temp[1]}"
+    
+    def change_displaybpm(self,dbpms, speed: float) -> str:
+        #三种情况：1.没有displaybpm 2.displaybpm为* 3.displaybpm为具体数值"xxx:xxx"
+        if dbpms == "*":
+            pass
+        else:
+            dbpms = list(map(float, dbpms.split(":")))
+            for i in range(len(dbpms)):
+                dbpms[i] = dbpms[i] * speed
+            result = "#DISPLAYBPM:"+":".join(list(map(str, dbpms)))+";"
+        return result
