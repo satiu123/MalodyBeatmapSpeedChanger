@@ -12,6 +12,8 @@ class Malody(Map):
         title:str=""    #record the beatmap title
         root:str=""
         '''
+        self.offset:list=[] #record the offset of each beatmap
+
         for self.root, dirs, files in os.walk("./temp"):
             for file in files:
                 if file.endswith(".mc"):
@@ -34,6 +36,8 @@ class Malody(Map):
             mc = json.load(f)
             mc["meta"]["version"]=mc["meta"]["version"]+" "+str(speed_rate)+"x"
             for note in reversed(mc["note"]):
+                if note.get("offset")!=None:
+                    note["offset"]=int(note["offset"]/speed_rate)
                 if note.get("sound") != None:
                     note["sound"]=note["sound"].replace(self.get_split(selected_map,1),f"x{speed_rate}{self.get_split(selected_map,1)}")
             for time in mc["time"]:
@@ -44,3 +48,4 @@ class Malody(Map):
         # write the modified json to a new file
         with open(new_file_path, 'w', encoding='utf-8') as f:
             json.dump(mc, f, ensure_ascii=False)
+    
