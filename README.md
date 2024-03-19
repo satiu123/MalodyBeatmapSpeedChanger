@@ -1,6 +1,7 @@
 # A Simple BeatMap SpeedChanger
 
 - simplely use sox,ffmpeg,json to edit
+- [Gui](https://github.com/satiu123/MalodyBeatmapSpeedChanger/tree/gui) VERSION HERE!
 - support malody/osu/etterna mania(just tested mania 4k)
 
 
