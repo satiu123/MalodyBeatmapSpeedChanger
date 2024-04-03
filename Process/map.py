@@ -1,14 +1,13 @@
-import os,zipfile,time
+import os,zipfile,time,subprocess
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from pathlib import Path
-from  Module.Gui.MySignal import MySignal
+from Process.MySignal import signal1
 
-info_signal = MySignal()
 def unzip_file(zip_filepath, dest_path) -> None:
     if os.path.exists("temp"):
         os.system("rd /s/q temp")
-    with zipfile.ZipFile(zip_filepath, 'r') as zip:
+    with zipfile.ZipFile(zip_filepath, 'r',) as zip:
         zip.extractall(dest_path)
 
 def zip_dir(dirname, zipfilename) -> None:
@@ -30,7 +29,7 @@ def judge_maptype() -> str:
                 elif file.endswith(".sm"):
                     maptype="etterna"
                     break
-    info_signal.signal1.emit(f"the MAPTYPE is:{maptype}")
+    signal1.emit(f"the MAPTYPE is:{maptype}")
     #print("the MAPTYPE is:",maptype)
     return maptype
 
@@ -53,18 +52,15 @@ class Map:
         os.environ['PATH'] = path
         self.title=os.path.basename(map_path).split(".")[0]
 
-    def change_speed_and_pitch(self,input_file, output_file,speed):
-        import sox
-        # 创建一个 transformer 对象
-        tfm = sox.Transformer()
-        # 设置音频的速度和音调
-        if speed<1:
-            tfm.tempo(factor=speed)
+    def change_speed_and_pitch(self, input_file, output_file, speed):
+        # 创建一个命令列表
+        if speed < 1:
+            cmd = ['sox', input_file, output_file, 'tempo', str(speed)]
         else:
-            tfm.speed(factor=speed)
-        tfm.build(input_file, output_file)
-        info_signal.signal1.emit(f"processing:{input_file}->{output_file} speed:{speed}... done!")
-        # print("processing:",input_file,"->",output_file,"speed:",speed,"... done!")
+            cmd = ['sox', input_file, output_file, 'speed', str(speed)]
+        # 使用subprocess运行命令，并隐藏输出
+        subprocess.run(cmd,creationflags=subprocess.CREATE_NO_WINDOW)
+        signal1.emit(f"processing:{input_file}->{output_file} speed:{speed}... done!")
     def get_split(self,selected_map,pos):
         return os.path.splitext(self.music[selected_map])[pos]
     def change_info(self,select_map,speed_rate) -> None:
@@ -83,35 +79,23 @@ class Map:
             os.makedirs("out")
         zip_dir('temp', f'out/{self.title}'+f'{".osz"if maptype=="osu" else ".mcz" if maptype=="malody" else ".zip"}')
         os.system("rd /s/q temp")
-        # input("All done!Press Enter to check...")
-        #os.startfile("out")
     def get_version(self):
         return self.version
     def get_title(self):
         return self.title
     #maptype:osu ||malody ||etterna
     def run(self,maptype,speed_rate,version):
-        # if not self.version:
-        #     print("0:No Name")
-        # for mapp in self.version:
-        #     #当没有难度名时，输出"No Name"
-        #     if not mapp:
-        #         print(self.version.index(mapp),":","No Name")
-        #     else:
-        #         print(self.version.index(mapp),":",mapp)
-        #selected_map=int(input("input choice(eg:0)：\n"))
         selected_map=self.version.index(version)
-        #speed_rate = [float(rate) for rate in input("input Speed (eg:1.1 1.3 1.4)：\n").split()]
+        
         begin=time.time()
-        info_signal.signal1.emit(f"start processing!{self.title}\n"
+        signal1.emit(f"start processing!{self.title} {speed_rate}\n"
               "if the audio file is an MP3 file, the speed may be slower please wait patiently!")
-        # print("start processing!\n"
-        #       "if the audio file is an MP3 file, the speed may be slower please wait patiently!")
+        
         with ThreadPoolExecutor() as executor:
             executor.map(partial(self.process,selected_map),speed_rate)
         # for rate in speed_rate:
         #     self.process(selected_map,rate)
-        info_signal.signal1.emit(f"Total cost:{time.time()-begin:.2f}s")
+        signal1.emit(f"Total cost:{time.time()-begin:.2f}s")
         #packed 
         self.pack(maptype)
 

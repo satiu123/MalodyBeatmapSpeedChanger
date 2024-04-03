@@ -1,4 +1,4 @@
-from Module.Process.map import Map
+from Process.map import Map
 import os,json
 class Malody(Map):
     def __init__(self,map_path) -> None:

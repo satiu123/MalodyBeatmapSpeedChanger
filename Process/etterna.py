@@ -1,4 +1,4 @@
-from Module.Process.map import Map
+from Process.map import Map
 import os,re,io,copy
 
 class Etterna(Map):

@@ -1,9 +1,7 @@
-import Module.Process.malody as malody,Module.Process.osu as osu,Module.Process.etterna as etterna
+import Process.malody as malody,Process.osu as osu,Process.etterna as etterna
 import threading,queue,time
-from Module.Process.map import unzip_file,judge_maptype
-from Module.Process.map import info_signal
-from Module.Gui.MySignal import MySignal
-getinfo_signal = MySignal()
+from Process.map import unzip_file,judge_maptype
+from Process.MySignal import signal1,signal2
 # 创建一个全局变量来存储run线程和队列
 game=None
 user_has_chosen:bool = False
@@ -18,7 +16,8 @@ def run(map_path,rate):
     #等待用户选择
     while not user_has_chosen:
         if stop_thread:
-            info_signal.signal1.emit("The thread has been stopped!") 
+            signal1.emit("The thread has been stopped!") 
+            signal1.emit("")
             return
         time.sleep(1)
     user_has_chosen = False
@@ -40,7 +39,7 @@ def getVersion(map_path):
         user_has_chosen =True
         stop_thread=False
     else:
-        getinfo_signal.signal2.emit(game.get_version(),game.get_title()) #type:ignore
+        signal2.emit(game.get_version(),game.get_title()) #type:ignore
     return maptype #type:ignore
 def addQueue(rate_dict):
     # 将参数添加到队列中
@@ -48,17 +47,24 @@ def addQueue(rate_dict):
         run_queue.put((map_path, rate_dict[map_path]))
 
 def processQueue():
-    while not run_queue.empty():
+    while not run_queue.empty() and stop_thread==False:
         # 从队列中获取参数
         map_path, rate = run_queue.get()
         # 运行run函数
         run(map_path, rate)
-    run_queue.task_done()
-    info_signal.signal1.emit("All done!") 
+    # 通知队列任务已完成
+    if run_queue.empty():
+        run_queue.task_done()
+        signal1.emit("All done!") 
 def startQueue() -> None:
-    global run_thread,game
+    global run_thread,stop_thread,user_has_chosen
     if run_thread is not None and run_thread.is_alive():
         return
+    if run_queue.empty():
+        signal1.emit("The queue is empty!")
+        return
+    user_has_chosen = False
+    stop_thread=False
     run_thread = threading.Thread(target=processQueue)
     run_thread.start()
 
