@@ -36,26 +36,30 @@ class Osu(Map):
                     self.data[current_section].append(line)
         self.all_map.append(self.data)
     def get_info(self):
-        self.music.append(os.path.join(self.root,self.data["General"][0].split(":")[1][1:]))
+        self.music.append(os.path.join(self.root,self.data["General"][0].split(":")[1][0:].strip()))
         self.version.append(self.data["Metadata"][5].split(":")[1])
         self.bpmlist.append(float(self.data["TimingPoints"][0].split(",")[1]))
     def change_info(self, select_map, speed_rate) -> None:
         self.data=copy.deepcopy(self.all_map[select_map])
         self.data["Metadata"][5]+=f" {speed_rate}x"
         self.data["General"][0]=f"AudioFilename:{os.path.basename(self.music[select_map]).replace(self.get_split(select_map,1),f'x{speed_rate}{self.get_split(select_map,1)}')}"
+        #修改offset和bpm
         for i in range(len(self.data["TimingPoints"])):
             timing_point = self.data["TimingPoints"][i].split(",")
             if timing_point[0]=='':
                 break
+            timing_point[0] = str(int(int(timing_point[0]) / speed_rate))
             timing_point[1] = str(float(timing_point[1]) / speed_rate)
             self.data["TimingPoints"][i] = ",".join(timing_point)
+        #修改HitObjects
         for i in range(len(self.data["HitObjects"])):
             beat_time = self.data["HitObjects"][i].split(",")
-            beat_time[2] = str(int(int(beat_time[2])/speed_rate))
-            if beat_time[3]=="128":
-                part=beat_time[5].split(":")
-                beat_time[5]=f"{str(int(int(part[0])/speed_rate))}:{':'.join(part[1:])}:"
-            self.data["HitObjects"][i] = ",".join(beat_time)
+            if beat_time[0]!='':
+                beat_time[2] = str(int(int(beat_time[2])/speed_rate))
+                if beat_time[3]=="128":
+                    part=beat_time[5].split(":")
+                    beat_time[5]=f"{str(int(int(part[0])/speed_rate))}:{':'.join(part[1:])}:"
+                self.data["HitObjects"][i] = ",".join(beat_time)
 
         # create a new file
         new_file_path = os.path.join(self.root, os.path.splitext(os.path.basename(self.maplist[select_map]))[0]+f' {speed_rate}x.osu')
